@@ -162,7 +162,52 @@ stringstream ss;
   // printArray(array,size);
   file.close();}
 
-void zadanie3() {}
+void zadanie3(double** array, int size, double DELTA, int k) {
+  stringstream ss;
+  ss << "Zad3_" << k << ".dat";
+  string nazwaPliku = ss.str();
+
+  int w = 1.9;
+  double sum_previous = 1.;
+  double sum_current = 0.;
+  double TOL = 10e-6;
+  int counter = 0;
+  std::ofstream file;
+  file.open(nazwaPliku.c_str());
+  file.precision(8);
+  if (file.good()) {
+    cout << fabs((sum_current - sum_previous) / sum_previous) << "\t" << TOL;
+    while (fabs((sum_current - sum_previous) / sum_previous) > TOL) {
+      // cout<<"wha";
+      counter++;
+      for (int i = k; i < size - k; i+=k) {
+        for (int j = k; j < size - k; j+=k) {
+          array[i][j] =
+              ((1. - w) * array[i][j]) +
+              (w * ((array[i + k][j] + array[i - k][j] + array[i][j + k] +
+                     array[i][j - k] + pow((k * DELTA), 2) * ro(i, j)) /
+                    4.));
+        }
+      }
+      sum_previous = sum_current;
+      sum_current = 0;
+      for (int i = 0; i < size - k; i+=k) {
+        for (int j = 0; j < size -k; j+=k) {
+          sum_current +=
+              pow((k * DELTA), 2) *
+              (0.5 * (pow(((array[i + k][j] - array[i][j]) / (k * DELTA)), 2) +
+                      pow(((array[i][j + k] - array[i][j]) / (k * DELTA)), 2)) -
+               (ro(i, j) * array[i][j]));
+        }
+      }
+      file << counter << '\t' << sum_current << endl;
+    }
+  }
+  // printArray(array,size);
+  file.close();
+  }
+
+
 int main(int argc, char const* argv[]) {
   int SIZE = 64;
   double DELTA = 0.01;
@@ -188,7 +233,12 @@ int main(int argc, char const* argv[]) {
     zadanie1(copy, SIZE, DELTA, i);
     deleteArray(copy,SIZE);
   }
-  zadanie3();
+
+  for (int k = 16; k >= 1; k /= 2) {
+    double** copy = copyArray(array, SIZE);
+    zadanie3(copy, SIZE, DELTA, k);
+    deleteArray(copy,SIZE);
+  }
   // printArray(array,SIZE);
   deleteArray(array, SIZE);
 
